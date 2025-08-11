@@ -1,20 +1,26 @@
-# NFT Ticketing Core Contracts
+## Circuits
 
-This repository contains foundational smart contracts and interfaces for a programmable ticketing system.  The goal of this project is to enable "official" secondary sales with configurable rules — such as price caps, cooldown periods and regional/age restrictions — while preventing scalping and protecting user privacy through zero‑knowledge proofs.
+This directory contains example Circom circuits illustrating how
+zero‑knowledge proofs can enforce properties on user data without
+revealing sensitive information. The circuits here are **not** meant
+for production use; they are simplified proof‑of‑concepts.
 
-The code here is a starting point for a larger system and is intentionally minimal.  You will find three Solidity contracts:
+### ageCheck.circom
 
-- **`IRuleEngine.sol`** — Defines a `TransferCtx` struct and a single `check` function.  Ticket contracts call the rule engine before each transfer to determine whether a transfer is allowed and what royalty (if any) should be charged.
-- **`TicketCollection.sol`** — An ERC‑1155 NFT representing a collection of tickets for a single event.  The owner can mint new tickets and set a rule engine.  Transfers invoke the rule engine to enforce resale rules, and the contract supports a simple `checkIn` function for marking tickets as used.
-- **`TicketFactory.sol`** — A factory that deploys new `TicketCollection` instances.  This allows event organisers to spin up a fresh collection for each event without manually deploying the ticket contract themselves.
+The `ageCheck.circom` circuit demonstrates a very simple proof that
+a user is at least 18 years old. It defines a template `AgeCheck` that
+takes an `age` input and outputs a boolean `isAdult`. The circuit
+computes the difference `age - 18` and uses that to determine whether
+the user meets the minimum age requirement. In a real implementation
+you would not reveal the user's exact age; instead you would use a
+range proof or bit decomposition along with a proper comparator to
+assert that `age >= 18` without disclosing the input. Negative values
+and overflows would also need to be handled.
 
-These contracts are intended for demonstration and development purposes only.  They omit many production features such as on‑chain storage of verifying keys, dynamic royalty logic, and integration with account abstraction wallets.  For more information about the overall architecture and design rationale, please refer to the project documentation and technical blueprint.
+To compile the circuit with Circom you can run:
 
-## Usage
+    circom ageCheck.circom --r1cs --wasm --sym
 
-1. Deploy `TicketFactory` on an EVM‑compatible network.
-2. Call `createTicket(name, uri)` to deploy a new `TicketCollection` for an event.  The caller becomes the owner of the collection.
-3. Mint tickets via `TicketCollection.mint()` and distribute them to buyers.
-4. Implement a contract that conforms to `IRuleEngine` and set it on your `TicketCollection` instance via `setRuleEngine()`.  The rule engine can enforce cooldowns, price caps, age/region proofs, and calculate royalties.
-
-This code uses Solidity ^0.8.17 and assumes that OpenZeppelin's contracts are available at compile time.  You will need a Solidity development environment such as Hardhat or Foundry to compile and test these contracts.
+This will generate the artifacts needed to produce a proof and a
+verifier contract. In this repository we focus on the Solidity
+integration rather than the full ZK workflow.

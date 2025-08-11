@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT Ticketing Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>NFT Ticketing Demo</h1>
+    <button id="connect">Connect Wallet</button>
+    <p id="status"></p>
+    <hr>
+    <h2>Create Ticket Collection</h2>
+    <input id="factoryAddr" type="text" placeholder="TicketFactory address" style="width:100%;margin-bottom:4px;" />
+    <input id="name" type="text" placeholder="Event name" style="width:100%;margin-bottom:4px;" />
+    <input id="uri" type="text" placeholder="URI template (e.g. ipfs://.../{id})" style="width:100%;margin-bottom:4px;" />
+    <button id="createCollection">Create Collection</button>
+    <p id="createStatus"></p>
+    <hr>
+    <h2>Mint Ticket</h2>
+    <input id="collectionAddr" type="text" placeholder="TicketCollection address" style="width:100%;margin-bottom:4px;" />
+    <input id="tokenId" type="number" placeholder="Token ID" style="width:100%;margin-bottom:4px;" />
+    <input id="amount" type="number" placeholder="Amount" style="width:100%;margin-bottom:4px;" />
+    <button id="mint">Mint</button>
+    <p id="mintStatus"></p>
+    <hr>
+    <h2>Transfer Ticket</h2>
+    <input id="transferCollectionAddr" type="text" placeholder="TicketCollection address" style="width:100%;margin-bottom:4px;" />
+    <input id="transferTokenId" type="number" placeholder="Token ID" style="width:100%;margin-bottom:4px;" />
+    <input id="transferAmount" type="number" placeholder="Amount" style="width:100%;margin-bottom:4px;" />
+    <input id="toAddr" type="text" placeholder="Recipient address" style="width:100%;margin-bottom:4px;" />
+    <button id="transfer">Transfer</button>
+    <p id="transferStatus"></p>
+    <script src="script.js"></script>
+</body>
+</html>

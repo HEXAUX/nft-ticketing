@@ -1,38 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFT Ticketing Demo</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web3 NFT Ticketing Demo</title>
+  <!-- Import Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonts for a modern look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Animated gradient background */
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(130deg, #1b0034, #4f0071, #1b0034);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      color: #ffffff;
+    }
+    @keyframes gradientBG {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    /* Glass effect container */
+    .glass {
+      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 60px rgba(0, 0, 0, 0.2);
+      border-radius: 1rem;
+      padding: 2rem;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 2rem;
+    }
+    /* Neon style button with animated gradient border */
+    .neon-btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      border-radius: 0.5rem;
+      color: #ffffff;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: box-shadow 0.3s ease;
+    }
+    .neon-btn::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, #ff00ff, #00ffff, #ff00ff);
+      animation: spin 4s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .neon-btn span {
+      position: relative;
+      z-index: 10;
+    }
+    .neon-btn:hover {
+      box-shadow: 0 0 10px rgba(255, 0, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.6);
+    }
+    /* Disable the spinning effect on small screens for performance */
+    @media (max-width: 600px) {
+      .neon-btn::before {
+        display: none;
+      }
+    }
+  </style>
 </head>
-<body>
-    <h1>NFT Ticketing Demo</h1>
-    <button id="connect">Connect Wallet</button>
-    <p id="status"></p>
-    <hr>
-    <h2>Create Ticket Collection</h2>
-    <input id="factoryAddr" type="text" placeholder="TicketFactory address" style="width:100%;margin-bottom:4px;" />
-    <input id="name" type="text" placeholder="Event name" style="width:100%;margin-bottom:4px;" />
-    <input id="uri" type="text" placeholder="URI template (e.g. ipfs://.../{id})" style="width:100%;margin-bottom:4px;" />
-    <button id="createCollection">Create Collection</button>
-    <p id="createStatus"></p>
-    <hr>
-    <h2>Mint Ticket</h2>
-    <input id="collectionAddr" type="text" placeholder="TicketCollection address" style="width:100%;margin-bottom:4px;" />
-    <input id="tokenId" type="number" placeholder="Token ID" style="width:100%;margin-bottom:4px;" />
-    <input id="amount" type="number" placeholder="Amount" style="width:100%;margin-bottom:4px;" />
-    <button id="mint">Mint</button>
-    <p id="mintStatus"></p>
-    <hr>
-    <h2>Transfer Ticket</h2>
-    <input id="transferCollectionAddr" type="text" placeholder="TicketCollection address" style="width:100%;margin-bottom:4px;" />
-    <input id="transferTokenId" type="number" placeholder="Token ID" style="width:100%;margin-bottom:4px;" />
-    <input id="transferAmount" type="number" placeholder="Amount" style="width:100%;margin-bottom:4px;" />
-    <input id="toAddr" type="text" placeholder="Recipient address" style="width:100%;margin-bottom:4px;" />
-    <button id="transfer">Transfer</button>
-    <p id="transferStatus"></p>
-    <script src="script.js"></script>
+<body class="space-y-6">
+  <header class="text-center space-y-2">
+    <h1 class="text-4xl font-bold">NFT Ticketing Demo</h1>
+    <p class="text-lg">Experience next-gen ticketing with privacy and anti-scalping rules</p>
+  </header>
+
+  <main class="w-full flex flex-col items-center space-y-6">
+    <!-- Connection status output -->
+    <div id="status" class="glass text-center"></div>
+
+    <!-- Connect wallet button -->
+    <div class="glass flex justify-center">
+      <button id="connect" class="neon-btn"><span>Connect Wallet</span></button>
+    </div>
+
+    <!-- Section to create a ticket collection -->
+    <section class="glass">
+      <h2 class="text-2xl font-semibold mb-4">Create Ticket Collection</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <input id="factoryAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="TicketFactory address" />
+        <input id="name" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Name (e.g. Concert2025)" />
+        <input id="uri" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="URI template (e.g. ipfs://...)" />
+        <button id="createCollection" class="neon-btn w-full text-center"><span>Create Collection</span></button>
+        <div id="createStatus" class="mt-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- Section to mint a ticket -->
+    <section class="glass">
+      <h2 class="text-2xl font-semibold mb-4">Mint Ticket</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <input id="collectionAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Collection address" />
+        <input id="tokenId" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Token ID" />
+        <input id="amount" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Amount" />
+        <button id="mint" class="neon-btn w-full"><span>Mint</span></button>
+        <div id="mintStatus" class="mt-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- Section to transfer a ticket -->
+    <section class="glass">
+      <h2 class="text-2xl font-semibold mb-4">Transfer Ticket</h2>
+      <div class="grid grid-cols-1 gap-4">
+        <input id="transferCollectionAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Collection address" />
+        <input id="transferTokenId" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Token ID" />
+        <input id="transferAmount" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Amount" />
+        <input id="toAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Recipient address" />
+        <button id="transfer" class="neon-btn w-full"><span>Transfer</span></button>
+        <div id="transferStatus" class="mt-2 text-sm"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Load ethers.js via CDN for blockchain interactions -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script>
+    // Initialize provider with any network; wallet will connect with metamask or similar
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    let signer;
+
+    // Minimal ABIs to interact with TicketFactory and TicketCollection
+    const factoryAbi = [
+      "function createCollection(string name, string uri) public returns (address)",
+      "event CollectionCreated(address indexed collection)"
+    ];
+    const collectionAbi = [
+      "function mint(address to, uint256 id, uint256 amount, bytes data) public",
+      "function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes data) public"
+    ];
+
+    // Connect wallet when user clicks the connect button
+    document.getElementById('connect').addEventListener('click', async () => {
+      try {
+        await provider.send('eth_requestAccounts', []);
+        signer = provider.getSigner();
+        const address = await signer.getAddress();
+        document.getElementById('status').textContent = 'Wallet connected: ' + address;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('status').textContent = 'Wallet connection failed';
+      }
+    });
+
+    // Create a ticket collection
+    document.getElementById('createCollection').addEventListener('click', async () => {
+      const factoryAddress = document.getElementById('factoryAddr').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const uri = document.getElementById('uri').value.trim();
+      const statusEl = document.getElementById('createStatus');
+      if (!factoryAddress || !name || !uri) {
+        statusEl.textContent = 'All fields required';
+        return;
+      }
+      try {
+        const factoryContract = new ethers.Contract(factoryAddress, factoryAbi, signer);
+        const tx = await factoryContract.createCollection(name, uri);
+        statusEl.textContent = 'Transaction sent: ' + tx.hash + ' (waiting…)';
+        const receipt = await tx.wait();
+        const event = receipt.events.find(e => e.event === 'CollectionCreated');
+        const collectionAddress = event && event.args.collection;
+        statusEl.textContent = 'Collection created at: ' + collectionAddress;
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Create collection failed: ' + err.message;
+      }
+    });
+
+    // Mint a new ticket
+    document.getElementById('mint').addEventListener('click', async () => {
+      const collectionAddr = document.getElementById('collectionAddr').value.trim();
+      const tokenId = parseInt(document.getElementById('tokenId').value);
+      const amount = parseInt(document.getElementById('amount').value);
+      const statusEl = document.getElementById('mintStatus');
+      if (!collectionAddr || isNaN(tokenId) || isNaN(amount)) {
+        statusEl.textContent = 'All fields required';
+        return;
+      }
+      try {
+        const collectionContract = new ethers.Contract(collectionAddr, collectionAbi, signer);
+        const tx = await collectionContract.mint(await signer.getAddress(), tokenId, amount, '0x');
+        statusEl.textContent = 'Mint tx sent: ' + tx.hash + ' (waiting…)';
+        await tx.wait();
+        statusEl.textContent = 'Tickets minted!';
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Mint failed: ' + err.message;
+      }
+    });
+
+    // Transfer a ticket
+    document.getElementById('transfer').addEventListener('click', async () => {
+      const colAddr = document.getElementById('transferCollectionAddr').value.trim();
+      const tId = parseInt(document.getElementById('transferTokenId').value);
+      const amt = parseInt(document.getElementById('transferAmount').value);
+      const toAddr = document.getElementById('toAddr').value.trim();
+      const statusEl = document.getElementById('transferStatus');
+      if (!colAddr || isNaN(tId) || isNaN(amt) || !toAddr) {
+        statusEl.textContent = 'All fields required';
+        return;
+      }
+      try {
+        const collectionContract = new ethers.Contract(colAddr, collectionAbi, signer);
+        const tx = await collectionContract.safeTransferFrom(await signer.getAddress(), toAddr, tId, amt, '0x');
+        statusEl.textContent = 'Transfer tx sent: ' + tx.hash + ' (waiting…)';
+        await tx.wait();
+        statusEl.textContent = 'Transfer successful!';
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Transfer failed: ' + err.message;
+      }
+    });
+  </script>
 </body>
 </html>

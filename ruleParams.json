@@ -1,0 +1,15 @@
+{
+  "default": {
+    "eventTimestamp": 1759200000,
+    "baseFeeBps": 500,
+    "tLong": 2592000,
+    "tMid": 604800,
+    "capLongBps": 1500,
+    "capMidBps": 500,
+    "feeLongBps": 800,
+    "feeMidBps": 300,
+    "markupStepBps": 1000,
+    "markupFeePerStepBps": 200,
+    "maxFeeBps": 2500
+  }
+}

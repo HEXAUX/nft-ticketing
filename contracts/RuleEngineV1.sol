@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IRuleEngine.sol";
@@ -36,6 +36,7 @@ import "./IRuleEngine.sol";
 /// Face values are stored per collection and token ID.  Transfers with
 /// `priceWei == 0` are treated as gifts and bypass all checks and fees.
 contract RuleEngineV1 is IRuleEngine, Ownable {
+    constructor() Ownable(msg.sender) {}
     /// @dev Parameters for a given ticket collection.
     struct Params {
         uint256 eventTimestamp;

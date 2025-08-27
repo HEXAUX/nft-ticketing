@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -37,9 +37,9 @@ contract TicketCollection is ERC1155, Ownable {
     /// @param owner Address that will be given ownership of the collection.
     constructor(string memory _name, string memory _uri, address owner)
         ERC1155(_uri)
+        Ownable(owner)
     {
         name = _name;
-        transferOwnership(owner);
     }
 
     /// @notice Set the rule engine contract.  Only callable by the owner.
@@ -68,16 +68,50 @@ contract TicketCollection is ERC1155, Ownable {
         super.safeTransferFrom(from, to, id, amount, data);
     }
 
-    /// @inheritdoc ERC1155
-    function _beforeTokenTransfer(
-        address operator,
+    /// @notice Transfer with price information for rule engine validation
+    /// @dev This function should be used by marketplaces to provide price context
+    function safeTransferFromWithPrice(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        uint256 priceWei,
+        bytes memory zkRegionProof,
+        bytes memory zkAgeProof,
+        bytes memory data
+    ) external {
+        require(
+            from == msg.sender || isApprovedForAll(from, msg.sender),
+            "TicketCollection: caller is not owner nor approved"
+        );
+
+        // Validate with rule engine if set
+        if (address(ruleEngine) != address(0)) {
+            IRuleEngine.TransferCtx memory ctx = IRuleEngine.TransferCtx({
+                from: from,
+                to: to,
+                tokenId: id,
+                amount: amount,
+                priceWei: priceWei,
+                time: block.timestamp,
+                zkRegionProof: zkRegionProof,
+                zkAgeProof: zkAgeProof
+            });
+            (bool allowed, , string memory reason) = ruleEngine.check(ctx);
+            require(allowed, reason);
+        }
+
+        // Perform the transfer
+        _safeTransferFrom(from, to, id, amount, data);
+    }
+
+    /// @dev Hook called before any token transfer
+    function _update(
         address from,
         address to,
         uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
+        uint256[] memory values
     ) internal virtual override {
-        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
         // Handle mint: record mint time and mark first transfer pending.
         if (from == address(0)) {
@@ -87,18 +121,22 @@ contract TicketCollection is ERC1155, Ownable {
                 lastTransferTime[to][id] = block.timestamp;
                 firstTransferPending[to][id] = true;
             }
+            // Call parent implementation for mint
+            super._update(from, to, ids, values);
             return;
         }
 
         // Handle burn: nothing to enforce on burns.
         if (to == address(0)) {
+            // Call parent implementation for burn
+            super._update(from, to, ids, values);
             return;
         }
 
         // For each token being transferred, enforce cooldown and rule engine check.
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
-            uint256 amount = amounts[i];
+            uint256 amount = values[i];
 
             // Enforce cooldown based on whether this is the first resale.
             uint256 lastTime = lastTransferTime[from][id];
@@ -140,6 +178,9 @@ contract TicketCollection is ERC1155, Ownable {
             // 72h cooldown checks for subsequent transfers.
             firstTransferPending[from][id] = false;
         }
+        
+        // Call parent implementation
+        super._update(from, to, ids, values);
     }
 
     /// @notice Mark a ticket as used.  The caller must hold the ticket.

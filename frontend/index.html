@@ -11,7 +11,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+<<<<<<< Updated upstream
     /* Animated gradient background */
+=======
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --dark-gradient: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+      --neon-cyan: #00ffff;
+      --neon-purple: #bf00ff;
+      --neon-pink: #ff0080;
+    }
+    * {
+      box-sizing: border-box;
+    }
+
+>>>>>>> Stashed changes
     body {
       font-family: 'Inter', sans-serif;
       background: linear-gradient(130deg, #1b0034, #4f0071, #1b0034);
@@ -92,9 +108,147 @@
     <!-- Connection status output -->
     <div id="status" class="glass text-center"></div>
 
+<<<<<<< Updated upstream
     <!-- Connect wallet button -->
     <div class="glass flex justify-center">
       <button id="connect" class="neon-btn"><span>Connect Wallet</span></button>
+=======
+      <!-- Create Collection Card -->
+      <section class="glass-card p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="fas fa-plus-circle text-2xl text-purple-400"></i>
+          <h2 class="text-2xl font-semibold">Create Collection</h2>
+        </div>
+        <p class="text-gray-300 mb-6">Deploy a new NFT ticket collection for your event</p>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">
+              <i class="fas fa-factory mr-2"></i>Factory Address
+            </label>
+            <input id="factoryAddr" type="text" class="web3-input" 
+                   placeholder="0x..." />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">
+              <i class="fas fa-tag mr-2"></i>Collection Name
+            </label>
+            <input id="name" type="text" class="web3-input" 
+                   placeholder="Concert2025" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">
+              <i class="fas fa-link mr-2"></i>Metadata URI
+            </label>
+            <input id="uri" type="text" class="web3-input" 
+                   placeholder="ipfs://..." />
+    </div>
+
+          <button id="createCollection" class="web3-btn w-full secondary">
+            <i class="fas fa-rocket"></i>
+            Deploy Collection
+          </button>
+          
+          <div id="createStatus"></div>
+      </div>
+    </section>
+
+      <!-- Mint Ticket Card -->
+      <section class="glass-card p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="fas fa-coins text-2xl text-yellow-400"></i>
+          <h2 class="text-2xl font-semibold">Mint Tickets</h2>
+        </div>
+        <p class="text-gray-300 mb-6">Create new tickets for your collection</p>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">
+              <i class="fas fa-address-card mr-2"></i>Collection Address
+            </label>
+            <input id="collectionAddr" type="text" class="web3-input" 
+                   placeholder="0x..." />
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">
+                <i class="fas fa-hashtag mr-2"></i>Token ID
+              </label>
+              <input id="tokenId" type="number" class="web3-input" 
+                     placeholder="1" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">
+                <i class="fas fa-sort-numeric-up mr-2"></i>Amount
+              </label>
+              <input id="amount" type="number" class="web3-input" 
+                     placeholder="100" />
+            </div>
+          </div>
+          
+          <button id="mint" class="web3-btn w-full">
+            <i class="fas fa-hammer"></i>
+            Mint Tickets
+          </button>
+          
+          <div id="mintStatus"></div>
+      </div>
+    </section>
+
+      <!-- Transfer Ticket Card -->
+      <section class="glass-card p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="fas fa-exchange-alt text-2xl text-green-400"></i>
+          <h2 class="text-2xl font-semibold">Transfer Tickets</h2>
+        </div>
+        <p class="text-gray-300 mb-6">Send tickets to another wallet address</p>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">
+              <i class="fas fa-address-card mr-2"></i>Collection Address
+            </label>
+            <input id="transferCollectionAddr" type="text" class="web3-input" 
+                   placeholder="0x..." />
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">
+                <i class="fas fa-hashtag mr-2"></i>Token ID
+              </label>
+              <input id="transferTokenId" type="number" class="web3-input" 
+                     placeholder="1" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">
+                <i class="fas fa-sort-numeric-up mr-2"></i>Amount
+              </label>
+              <input id="transferAmount" type="number" class="web3-input" 
+                     placeholder="1" />
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">
+              <i class="fas fa-user mr-2"></i>Recipient Address
+            </label>
+            <input id="toAddr" type="text" class="web3-input" 
+                   placeholder="0x..." />
+          </div>
+          
+          <button id="transfer" class="web3-btn w-full accent">
+            <i class="fas fa-paper-plane"></i>
+            Send Tickets
+          </button>
+          
+          <div id="transferStatus"></div>
+      </div>
+    </section>
+>>>>>>> Stashed changes
     </div>
 
     <!-- Section to create a ticket collection -->

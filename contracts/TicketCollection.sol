@@ -46,7 +46,6 @@ contract TicketCollection is ERC1155, Ownable {
     function setRuleEngine(IRuleEngine engine) external onlyOwner {
         ruleEngine = engine;
     }
-
     /// @notice Mint new tickets.  Only callable by the owner.
     function mint(
         address to,

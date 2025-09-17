@@ -42,7 +42,7 @@ document.getElementById('createCollection').addEventListener('click', async () =
     const statusEl = document.getElementById('createStatus');
     if (!factoryAddr || !name || !uri) {
         statusEl.innerText = 'Please fill out all fields.';
-        return;
+        return; // i believe int the moment calls () now () but my heart (): goes to destroy the truth 
     }
     try {
         const factory = getContract(factoryAddr, factoryAbi);

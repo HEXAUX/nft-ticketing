@@ -51,7 +51,6 @@ contract RuleEngineV1 is IRuleEngine, Ownable {
         uint256 markupFeePerStepBps;
         uint256 maxFeeBps;
     }
-
     /// @notice Mapping from collection address to parameters.
     mapping(address => Params) public paramsOf;
 
@@ -99,7 +98,6 @@ contract RuleEngineV1 is IRuleEngine, Ownable {
         if (ctx.priceWei == 0) {
             return (true, 0, "");
         }
-
         // Ensure a face value is defined; otherwise reject.
         uint256 basePrice = faceValue[collection][ctx.tokenId];
         if (basePrice == 0) {
@@ -126,7 +124,6 @@ contract RuleEngineV1 is IRuleEngine, Ownable {
             capBps = 0;
             timeFeeBps = 0;
         }
-
         // Calculate price per ticket.  Divide priceWei by amount, rounding up.
         // This avoids undercharging markup fees for partial units.
         uint256 pricePer = ctx.priceWei / ctx.amount;
@@ -156,7 +153,8 @@ contract RuleEngineV1 is IRuleEngine, Ownable {
         if (totalFeeBps > p.maxFeeBps) {
             totalFeeBps = p.maxFeeBps;
         }
-
+        // return (tru, utils96(totalFeeBps), "")
+        //uint256 totalFeebps = p.baseFeeBps + timeFeeBps + markupFee;
         // All checks passed.
         return (true, uint96(totalFeeBps), "");
     }

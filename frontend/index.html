@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Web3 NFT Ticketing Demo</title>
+  <title>🎫 Web3 NFT Ticketing Platform</title>
   <!-- Import Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Fonts for a modern look -->
+  <!-- Fonts for a modern web3 look -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-<<<<<<< Updated upstream
-    /* Animated gradient background */
-=======
     :root {
       --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -27,92 +26,334 @@
       box-sizing: border-box;
     }
 
->>>>>>> Stashed changes
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(130deg, #1b0034, #4f0071, #1b0034);
-      background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
+      background: var(--dark-gradient);
+      background-attachment: fixed;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
+      margin: 0;
+      padding: 0;
       color: #ffffff;
+      overflow-x: hidden;
     }
-    @keyframes gradientBG {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
-    /* Glass effect container */
-    .glass {
-      backdrop-filter: blur(20px);
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 60px rgba(0, 0, 0, 0.2);
-      border-radius: 1rem;
-      padding: 2rem;
+
+    /* Animated background particles */
+    .bg-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      max-width: 600px;
-      margin-bottom: 2rem;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
     }
-    /* Neon style button with animated gradient border */
-    .neon-btn {
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--neon-cyan);
+      border-radius: 50%;
+      animation: float 20s infinite linear;
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Enhanced glass effect */
+    .glass-card {
+      backdrop-filter: blur(25px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
-      display: inline-block;
-      padding: 0.5rem 1.25rem;
-      border-radius: 0.5rem;
-      color: #ffffff;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      transition: box-shadow 0.3s ease;
     }
-    .neon-btn::before {
+
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-card::before {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: conic-gradient(from 0deg, #ff00ff, #00ffff, #ff00ff);
-      animation: spin 4s linear infinite;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: shimmer 3s infinite;
     }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
     }
-    .neon-btn span {
+
+    /* Modern buttons */
+    .web3-btn {
       position: relative;
-      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 14px 28px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary-gradient);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
-    .neon-btn:hover {
-      box-shadow: 0 0 10px rgba(255, 0, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.6);
+
+    .web3-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
     }
-    /* Disable the spinning effect on small screens for performance */
-    @media (max-width: 600px) {
-      .neon-btn::before {
-        display: none;
+
+    .web3-btn:active {
+      transform: translateY(0);
+    }
+
+    .web3-btn.secondary {
+      background: var(--secondary-gradient);
+      box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    }
+
+    .web3-btn.secondary:hover {
+      box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+    }
+
+    .web3-btn.accent {
+      background: var(--accent-gradient);
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+
+    .web3-btn.accent:hover {
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    }
+
+    /* Loading state */
+    .web3-btn.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .web3-btn.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Enhanced form inputs */
+    .web3-input {
+      width: 100%;
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: white;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .web3-input:focus {
+      outline: none;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .web3-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Status messages */
+    .status-message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .status-success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .status-error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .status-info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+    }
+
+    .status-warning {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    /* Header enhancements */
+    .hero-section {
+      text-align: center;
+      padding: 3rem 0;
+      background: radial-gradient(circle at center, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    }
+
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffffff 0%, var(--neon-cyan) 50%, var(--neon-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: rgba(255, 255, 255, 0.8);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .glass-card {
+        margin: 1rem;
+        padding: 1.5rem;
       }
+      
+      .web3-btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+      }
+      
+      .hero-section {
+        padding: 2rem 0;
+      }
+    }
+
+    /* Connection indicator */
+    .connection-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 8px 16px;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 20px;
+      color: #4ade80;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .connection-indicator.disconnected {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
   </style>
 </head>
-<body class="space-y-6">
-  <header class="text-center space-y-2">
-    <h1 class="text-4xl font-bold">NFT Ticketing Demo</h1>
-    <p class="text-lg">Experience next-gen ticketing with privacy and anti-scalping rules</p>
+<body>
+  <!-- Animated background particles -->
+  <div class="bg-particles" id="particles"></div>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 backdrop-filter backdrop-blur-lg bg-black bg-opacity-20 border-b border-white border-opacity-10">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-ticket-alt text-2xl text-cyan-400"></i>
+        <span class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+          Web3 Tickets
+        </span>
+      </div>
+      <div id="status" class="connection-indicator disconnected">
+        <div class="status-dot"></div>
+        <span id="statusText">Disconnected</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-section mt-20">
+    <div class="container mx-auto px-6">
+      <h1 class="hero-title">
+        <i class="fas fa-cube mr-4"></i>
+        NFT Ticketing Platform
+      </h1>
+      <p class="hero-subtitle">
+        Experience the future of event ticketing with blockchain technology, 
+        ensuring authenticity, preventing scalping, and protecting privacy
+      </p>
+      <button id="connect" class="web3-btn">
+        <i class="fas fa-wallet"></i>
+        Connect Wallet
+      </button>
+    </div>
   </header>
 
-  <main class="w-full flex flex-col items-center space-y-6">
-    <!-- Connection status output -->
-    <div id="status" class="glass text-center"></div>
+  <main class="container mx-auto px-6 pb-20">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
 
-<<<<<<< Updated upstream
-    <!-- Connect wallet button -->
-    <div class="glass flex justify-center">
-      <button id="connect" class="neon-btn"><span>Connect Wallet</span></button>
-=======
       <!-- Create Collection Card -->
       <section class="glass-card p-8">
         <div class="flex items-center gap-3 mb-6">
@@ -248,45 +489,7 @@
           <div id="transferStatus"></div>
       </div>
     </section>
->>>>>>> Stashed changes
     </div>
-
-    <!-- Section to create a ticket collection -->
-    <section class="glass">
-      <h2 class="text-2xl font-semibold mb-4">Create Ticket Collection</h2>
-      <div class="grid grid-cols-1 gap-4">
-        <input id="factoryAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="TicketFactory address" />
-        <input id="name" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Name (e.g. Concert2025)" />
-        <input id="uri" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="URI template (e.g. ipfs://...)" />
-        <button id="createCollection" class="neon-btn w-full text-center"><span>Create Collection</span></button>
-        <div id="createStatus" class="mt-2 text-sm"></div>
-      </div>
-    </section>
-
-    <!-- Section to mint a ticket -->
-    <section class="glass">
-      <h2 class="text-2xl font-semibold mb-4">Mint Ticket</h2>
-      <div class="grid grid-cols-1 gap-4">
-        <input id="collectionAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Collection address" />
-        <input id="tokenId" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Token ID" />
-        <input id="amount" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Amount" />
-        <button id="mint" class="neon-btn w-full"><span>Mint</span></button>
-        <div id="mintStatus" class="mt-2 text-sm"></div>
-      </div>
-    </section>
-
-    <!-- Section to transfer a ticket -->
-    <section class="glass">
-      <h2 class="text-2xl font-semibold mb-4">Transfer Ticket</h2>
-      <div class="grid grid-cols-1 gap-4">
-        <input id="transferCollectionAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Collection address" />
-        <input id="transferTokenId" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Token ID" />
-        <input id="transferAmount" type="number" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Amount" />
-        <input id="toAddr" type="text" class="w-full p-2 rounded bg-white bg-opacity-10 text-white placeholder-gray-300" placeholder="Recipient address" />
-        <button id="transfer" class="neon-btn w-full"><span>Transfer</span></button>
-        <div id="transferStatus" class="mt-2 text-sm"></div>
-      </div>
-    </section>
   </main>
 
   <!-- Load ethers.js via CDN for blockchain interactions -->
@@ -295,6 +498,7 @@
     // Initialize provider with any network; wallet will connect with metamask or similar
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     let signer;
+    let isConnected = false;
 
     // Minimal ABIs to interact with TicketFactory and TicketCollection
     const factoryAbi = [
@@ -306,85 +510,232 @@
       "function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes data) public"
     ];
 
+    // Create animated background particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 50;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Update connection status UI
+    function updateConnectionStatus(connected, address = '') {
+      const statusEl = document.getElementById('status');
+      const statusTextEl = document.getElementById('statusText');
+      
+      if (connected) {
+        statusEl.className = 'connection-indicator';
+        statusTextEl.textContent = `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
+      } else {
+        statusEl.className = 'connection-indicator disconnected';
+        statusTextEl.textContent = 'Disconnected';
+      }
+    }
+
+    // Show status message with styling
+    function showStatus(elementId, message, type = 'info') {
+      const statusEl = document.getElementById(elementId);
+      statusEl.className = `status-message status-${type}`;
+      statusEl.textContent = message;
+      
+      // Auto-clear success messages
+      if (type === 'success') {
+        setTimeout(() => {
+          statusEl.textContent = '';
+          statusEl.className = '';
+        }, 5000);
+      }
+    }
+
+    // Set button loading state
+    function setButtonLoading(buttonId, loading) {
+      const btn = document.getElementById(buttonId);
+      if (loading) {
+        btn.classList.add('loading');
+        btn.disabled = true;
+      } else {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
     // Connect wallet when user clicks the connect button
     document.getElementById('connect').addEventListener('click', async () => {
+      const connectBtn = document.getElementById('connect');
+      
       try {
+        setButtonLoading('connect', true);
+        
+        if (!window.ethereum) {
+          throw new Error('Please install MetaMask or another Web3 wallet');
+        }
+
         await provider.send('eth_requestAccounts', []);
         signer = provider.getSigner();
         const address = await signer.getAddress();
-        document.getElementById('status').textContent = 'Wallet connected: ' + address;
+        const network = await provider.getNetwork();
+        
+        isConnected = true;
+        updateConnectionStatus(true, address);
+        
+        connectBtn.innerHTML = '<i class="fas fa-check"></i> Connected';
+        connectBtn.classList.add('secondary');
+        
+        console.log(`Connected to ${network.name} (Chain ID: ${network.chainId})`);
+        
       } catch (err) {
         console.error(err);
-        document.getElementById('status').textContent = 'Wallet connection failed';
+        updateConnectionStatus(false);
+        showStatus('statusText', err.message || 'Connection failed', 'error');
+      } finally {
+        setButtonLoading('connect', false);
       }
     });
 
     // Create a ticket collection
     document.getElementById('createCollection').addEventListener('click', async () => {
+      if (!isConnected) {
+        showStatus('createStatus', 'Please connect your wallet first', 'warning');
+        return;
+      }
+
       const factoryAddress = document.getElementById('factoryAddr').value.trim();
       const name = document.getElementById('name').value.trim();
       const uri = document.getElementById('uri').value.trim();
-      const statusEl = document.getElementById('createStatus');
+      
       if (!factoryAddress || !name || !uri) {
-        statusEl.textContent = 'All fields required';
+        showStatus('createStatus', 'All fields are required', 'error');
         return;
       }
+      
       try {
+        setButtonLoading('createCollection', true);
+        showStatus('createStatus', 'Deploying collection...', 'info');
+        
         const factoryContract = new ethers.Contract(factoryAddress, factoryAbi, signer);
         const tx = await factoryContract.createCollection(name, uri);
-        statusEl.textContent = 'Transaction sent: ' + tx.hash + ' (waiting…)';
+        
+        showStatus('createStatus', `Transaction sent: ${tx.hash.slice(0, 10)}... (waiting for confirmation)`, 'info');
+        
         const receipt = await tx.wait();
         const event = receipt.events.find(e => e.event === 'CollectionCreated');
         const collectionAddress = event && event.args.collection;
-        statusEl.textContent = 'Collection created at: ' + collectionAddress;
+        
+        showStatus('createStatus', `✅ Collection deployed at: ${collectionAddress}`, 'success');
+        
+        // Auto-fill collection address in mint section
+        document.getElementById('collectionAddr').value = collectionAddress;
+        
       } catch (err) {
         console.error(err);
-        statusEl.textContent = 'Create collection failed: ' + err.message;
+        showStatus('createStatus', `❌ Failed: ${err.message}`, 'error');
+      } finally {
+        setButtonLoading('createCollection', false);
       }
     });
 
     // Mint a new ticket
     document.getElementById('mint').addEventListener('click', async () => {
+      if (!isConnected) {
+        showStatus('mintStatus', 'Please connect your wallet first', 'warning');
+        return;
+      }
+
       const collectionAddr = document.getElementById('collectionAddr').value.trim();
       const tokenId = parseInt(document.getElementById('tokenId').value);
       const amount = parseInt(document.getElementById('amount').value);
-      const statusEl = document.getElementById('mintStatus');
+      
       if (!collectionAddr || isNaN(tokenId) || isNaN(amount)) {
-        statusEl.textContent = 'All fields required';
+        showStatus('mintStatus', 'All fields are required', 'error');
         return;
       }
+      
       try {
+        setButtonLoading('mint', true);
+        showStatus('mintStatus', 'Minting tickets...', 'info');
+        
         const collectionContract = new ethers.Contract(collectionAddr, collectionAbi, signer);
         const tx = await collectionContract.mint(await signer.getAddress(), tokenId, amount, '0x');
-        statusEl.textContent = 'Mint tx sent: ' + tx.hash + ' (waiting…)';
+        
+        showStatus('mintStatus', `Transaction sent: ${tx.hash.slice(0, 10)}... (waiting for confirmation)`, 'info');
+        
         await tx.wait();
-        statusEl.textContent = 'Tickets minted!';
+        showStatus('mintStatus', `✅ Successfully minted ${amount} tickets (ID: ${tokenId})`, 'success');
+        
+        // Auto-fill transfer section
+        document.getElementById('transferCollectionAddr').value = collectionAddr;
+        document.getElementById('transferTokenId').value = tokenId;
+        
       } catch (err) {
         console.error(err);
-        statusEl.textContent = 'Mint failed: ' + err.message;
+        showStatus('mintStatus', `❌ Minting failed: ${err.message}`, 'error');
+      } finally {
+        setButtonLoading('mint', false);
       }
     });
 
     // Transfer a ticket
     document.getElementById('transfer').addEventListener('click', async () => {
+      if (!isConnected) {
+        showStatus('transferStatus', 'Please connect your wallet first', 'warning');
+        return;
+      }
+
       const colAddr = document.getElementById('transferCollectionAddr').value.trim();
       const tId = parseInt(document.getElementById('transferTokenId').value);
       const amt = parseInt(document.getElementById('transferAmount').value);
       const toAddr = document.getElementById('toAddr').value.trim();
-      const statusEl = document.getElementById('transferStatus');
+      
       if (!colAddr || isNaN(tId) || isNaN(amt) || !toAddr) {
-        statusEl.textContent = 'All fields required';
+        showStatus('transferStatus', 'All fields are required', 'error');
         return;
       }
+      
+      if (!ethers.utils.isAddress(toAddr)) {
+        showStatus('transferStatus', 'Invalid recipient address', 'error');
+        return;
+      }
+      
       try {
+        setButtonLoading('transfer', true);
+        showStatus('transferStatus', 'Transferring tickets...', 'info');
+        
         const collectionContract = new ethers.Contract(colAddr, collectionAbi, signer);
-        const tx = await collectionContract.safeTransferFrom(await signer.getAddress(), toAddr, tId, amt, '0x');
-        statusEl.textContent = 'Transfer tx sent: ' + tx.hash + ' (waiting…)';
+        const tx = await collectionContract.safeTransferFrom(
+          await signer.getAddress(), 
+          toAddr, 
+          tId, 
+          amt, 
+          '0x'
+        );
+        
+        showStatus('transferStatus', `Transaction sent: ${tx.hash.slice(0, 10)}... (waiting for confirmation)`, 'info');
+        
         await tx.wait();
-        statusEl.textContent = 'Transfer successful!';
+        showStatus('transferStatus', `✅ Successfully transferred ${amt} tickets to ${toAddr.slice(0, 6)}...${toAddr.slice(-4)}`, 'success');
+        
       } catch (err) {
         console.error(err);
-        statusEl.textContent = 'Transfer failed: ' + err.message;
+        showStatus('transferStatus', `❌ Transfer failed: ${err.message}`, 'error');
+      } finally {
+        setButtonLoading('transfer', false);
+      }
+    });
+
+    // Initialize particles and check for existing wallet connection
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+      
+      // Check if wallet is already connected
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        document.getElementById('connect').click();
       }
     });
   </script>

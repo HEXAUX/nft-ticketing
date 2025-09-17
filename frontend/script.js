@@ -24,7 +24,6 @@ function getContract(address, abi) {
     if (!signer) throw new Error('Wallet not connected');
     return new ethers.Contract(address, abi, signer);
 }
-
 // Minimal ABIs for the functions we call
 const factoryAbi = [
     'function createTicket(string name, string uri) public returns (address)'
@@ -42,7 +41,7 @@ document.getElementById('createCollection').addEventListener('click', async () =
     const statusEl = document.getElementById('createStatus');
     if (!factoryAddr || !name || !uri) {
         statusEl.innerText = 'Please fill out all fields.';
-        return; // i believe int the moment calls () now () but my heart (): goes to destroy the truth 
+        return;
     }
     try {
         const factory = getContract(factoryAddr, factoryAbi);

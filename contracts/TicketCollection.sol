@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -18,8 +18,8 @@ contract TicketCollection is ERC1155, Ownable {
     /// @notice Optional rule engine contract that enforces transfer rules.
     IRuleEngine public ruleEngine;
 
-    /// @dev Track which ticket IDs have been checked in (used).
-    mapping(uint256 => bool) public checkedIn;
+    /// @dev Track which tickets have been checked in by holder and token ID.
+    mapping(address => mapping(uint256 => bool)) public checkedIn;
 
     /// @dev Timestamp of the last transfer or mint for each holder and token ID.
     /// Used to enforce per‑ticket cooldowns on subsequent transfers.
@@ -37,9 +37,9 @@ contract TicketCollection is ERC1155, Ownable {
     /// @param owner Address that will be given ownership of the collection.
     constructor(string memory _name, string memory _uri, address owner)
         ERC1155(_uri)
+        Ownable(owner)
     {
         name = _name;
-        transferOwnership(owner);
     }
 
     /// @notice Set the rule engine contract.  Only callable by the owner.
@@ -57,6 +57,54 @@ contract TicketCollection is ERC1155, Ownable {
         _mint(to, id, amount, data);
     }
 
+    /// @dev Event emitted when a transfer with price is executed.
+    event TransferWithPrice(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId,
+        uint256 amount,
+        uint256 priceWei,
+        uint256 feeBps
+    );
+
+    /// @notice Transfer tickets with price information for rule engine validation.
+    /// @param from Sender address.
+    /// @param to Recipient address.
+    /// @param id Token ID.
+    /// @param amount Number of tickets.
+    /// @param priceWei Total price in wei (0 for gifts).
+    /// @param zkRegionProof Zero-knowledge proof for region eligibility.
+    /// @param zkAgeProof Zero-knowledge proof for age eligibility.
+    function safeTransferFromWithPrice(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        uint256 priceWei,
+        bytes memory zkRegionProof,
+        bytes memory zkAgeProof
+    ) public virtual {
+        // Store price information in storage for _update to access
+        _pendingTransfer = IRuleEngine.TransferCtx({
+            from: from,
+            to: to,
+            tokenId: id,
+            amount: amount,
+            priceWei: priceWei,
+            time: block.timestamp,
+            zkRegionProof: zkRegionProof,
+            zkAgeProof: zkAgeProof
+        });
+        _hasPendingTransfer = true;
+
+        // Execute the transfer
+        safeTransferFrom(from, to, id, amount, "");
+
+        // Clear pending transfer
+        _hasPendingTransfer = false;
+        delete _pendingTransfer;
+    }
+
     /// @inheritdoc ERC1155
     function safeTransferFrom(
         address from,
@@ -68,23 +116,24 @@ contract TicketCollection is ERC1155, Ownable {
         super.safeTransferFrom(from, to, id, amount, data);
     }
 
+    /// @dev Storage for pending transfer context during safeTransferFromWithPrice
+    IRuleEngine.TransferCtx private _pendingTransfer;
+    bool private _hasPendingTransfer;
+
     /// @inheritdoc ERC1155
-    function _beforeTokenTransfer(
-        address operator,
+    function _update(
         address from,
         address to,
         uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
+        uint256[] memory values
     ) internal virtual override {
-        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+        super._update(from, to, ids, values);
 
-        // Handle mint: record mint time and mark first transfer pending.
+        // Handle mint: mark first transfer pending but don't set lastTransferTime yet.
+        // This ensures the 72h cooldown starts from the first transfer, not mint.
         if (from == address(0)) {
             for (uint256 i = 0; i < ids.length; i++) {
                 uint256 id = ids[i];
-                // Record the time of mint for the recipient.
-                lastTransferTime[to][id] = block.timestamp;
                 firstTransferPending[to][id] = true;
             }
             return;
@@ -98,58 +147,73 @@ contract TicketCollection is ERC1155, Ownable {
         // For each token being transferred, enforce cooldown and rule engine check.
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
-            uint256 amount = amounts[i];
+            uint256 amount = values[i];
 
             // Enforce cooldown based on whether this is the first resale.
             uint256 lastTime = lastTransferTime[from][id];
-            uint256 required;
-            if (firstTransferPending[from][id]) {
-                required = 72 hours;
-            } else {
-                required = 24 hours;
+            if (lastTime > 0) {  // Skip cooldown check if never transferred (first transfer)
+                uint256 required;
+                if (firstTransferPending[from][id]) {
+                    required = 72 hours;
+                } else {
+                    required = 24 hours;
+                }
+                require(
+                    block.timestamp >= lastTime + required,
+                    firstTransferPending[from][id]
+                        ? "TicketCollection: cooldown 72h"
+                        : "TicketCollection: cooldown 24h"
+                );
             }
-            require(
-                block.timestamp >= lastTime + required,
-                firstTransferPending[from][id]
-                    ? "TicketCollection: cooldown 72h"
-                    : "TicketCollection: cooldown 24h"
-            );
 
-            // If a rule engine is set, validate the transfer.  Price and proofs
-            // are zeroed here; marketplace or frontends should supply these
-            // parameters as needed.
+            // If a rule engine is set, validate the transfer.
+            uint96 feeBps = 0;
             if (address(ruleEngine) != address(0)) {
-                IRuleEngine.TransferCtx memory ctx = IRuleEngine.TransferCtx({
-                    from: from,
-                    to: to,
-                    tokenId: id,
-                    amount: amount,
-                    priceWei: 0,
-                    time: block.timestamp,
-                    zkRegionProof: "",
-                    zkAgeProof: ""
-                });
-                (bool allowed, , string memory reason) = ruleEngine.check(ctx);
+                IRuleEngine.TransferCtx memory ctx;
+
+                // Use pending transfer context if available (from safeTransferFromWithPrice)
+                if (_hasPendingTransfer && _pendingTransfer.tokenId == id) {
+                    ctx = _pendingTransfer;
+                } else {
+                    // Fallback: treat as gift transfer (priceWei = 0)
+                    ctx = IRuleEngine.TransferCtx({
+                        from: from,
+                        to: to,
+                        tokenId: id,
+                        amount: amount,
+                        priceWei: 0,
+                        time: block.timestamp,
+                        zkRegionProof: "",
+                        zkAgeProof: ""
+                    });
+                }
+
+                (bool allowed, uint96 fee, string memory reason) = ruleEngine.check(ctx);
                 require(allowed, reason);
+                feeBps = fee;
+
+                // Emit event if price is set
+                if (ctx.priceWei > 0) {
+                    emit TransferWithPrice(from, to, id, amount, ctx.priceWei, feeBps);
+                }
             }
 
             // Update state for the recipient to enforce 24h cooldown going forward.
             lastTransferTime[to][id] = block.timestamp;
             firstTransferPending[to][id] = false;
-            // Clear first transfer flag for the sender to avoid unnecessary
-            // 72h cooldown checks for subsequent transfers.
-            firstTransferPending[from][id] = false;
         }
     }
 
-    /// @notice Mark a ticket as used.  The caller must hold the ticket.
-    /// This basic implementation simply records that the given `id` has
-    /// been checked in.  A more robust implementation would tie this state
-    /// to individual token holders or support multi‑use tickets.
-    function checkIn(uint256 id, bytes memory data) external {
+    /// @dev Event emitted when a ticket is checked in.
+    event CheckedIn(address indexed holder, uint256 indexed tokenId);
+
+    /// @notice Mark a ticket as used. The caller must hold the ticket.
+    /// Each holder can check in their own ticket independently.
+    /// @param id Token ID to check in.
+    function checkIn(uint256 id) external {
         require(balanceOf(msg.sender, id) > 0, "TicketCollection: not holder");
-        require(!checkedIn[id], "TicketCollection: already checked in");
-        checkedIn[id] = true;
-        // data parameter is unused but included for extensibility.
+        require(!checkedIn[msg.sender][id], "TicketCollection: already checked in");
+        checkedIn[msg.sender][id] = true;
+        emit CheckedIn(msg.sender, id);
     }
 }

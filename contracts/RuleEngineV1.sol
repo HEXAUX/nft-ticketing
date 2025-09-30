@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IRuleEngine.sol";
@@ -36,6 +36,7 @@ import "./IRuleEngine.sol";
 /// Face values are stored per collection and token ID.  Transfers with
 /// `priceWei == 0` are treated as gifts and bypass all checks and fees.
 contract RuleEngineV1 is IRuleEngine, Ownable {
+    constructor() Ownable(msg.sender) {}
     /// @dev Parameters for a given ticket collection.
     struct Params {
         uint256 eventTimestamp;
@@ -64,6 +65,10 @@ contract RuleEngineV1 is IRuleEngine, Ownable {
     function setParams(address collection, Params calldata p) external onlyOwner {
         require(collection != address(0), "RuleEngineV1: invalid collection");
         require(p.eventTimestamp > block.timestamp, "RuleEngineV1: event in past");
+        require(p.tLong > p.tMid, "RuleEngineV1: tLong must be greater than tMid");
+        require(p.capLongBps >= p.capMidBps, "RuleEngineV1: capLongBps must be >= capMidBps");
+        require(p.feeLongBps >= p.feeMidBps, "RuleEngineV1: feeLongBps must be >= feeMidBps");
+        require(p.maxFeeBps <= 10000, "RuleEngineV1: maxFeeBps cannot exceed 100%");
         paramsOf[collection] = p;
     }
 
@@ -126,9 +131,8 @@ contract RuleEngineV1 is IRuleEngine, Ownable {
             timeFeeBps = 0;
         }
 
-        // Calculate price per ticket.  Divide priceWei by amount, rounding up.
-        // This avoids undercharging markup fees for partial units.
-        uint256 pricePer = ctx.priceWei / ctx.amount;
+        // Calculate price per ticket.  Use rounding up to avoid undercharging markup fees.
+        uint256 pricePer = (ctx.priceWei + ctx.amount - 1) / ctx.amount;
 
         // Enforce price cap.  If the price per ticket exceeds basePrice * (1 + capBps/10000)
         // then the sale is rejected.
@@ -146,9 +150,15 @@ contract RuleEngineV1 is IRuleEngine, Ownable {
             markupBps = 0;
         }
 
-        // Compute number of markup steps, each of size `markupStepBps`.
-        uint256 steps = p.markupStepBps > 0 ? markupBps / p.markupStepBps : 0;
-        uint256 markupFee = steps * p.markupFeePerStepBps;
+        // Compute markup fee with improved precision.  Use rounding up to ensure
+        // even small markups are charged appropriately.
+        uint256 markupFee;
+        if (p.markupStepBps > 0 && markupBps > 0) {
+            uint256 steps = (markupBps + p.markupStepBps - 1) / p.markupStepBps;
+            markupFee = steps * p.markupFeePerStepBps;
+        } else {
+            markupFee = 0;
+        }
 
         // Sum up all fee components.
         uint256 totalFeeBps = p.baseFeeBps + timeFeeBps + markupFee;
